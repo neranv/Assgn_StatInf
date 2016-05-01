@@ -1,0 +1,53 @@
+---
+title: "Exploring Exponential Distribution"
+output: pdf_document
+author: "Naren Vijayakumar"
+fontsize: 11pt
+geometry: margin=1in
+---
+
+```{r warning=FALSE, message=FALSE,echo=FALSE}
+library(ggplot2)
+```
+
+### 1. Overview
+In this section, we are going to study about Central Limit Theorem using simulations. For this purpose, we are going to simulate 40 random exponential distributions and take mean of it. We are going to repeat this for 1000 times.
+
+For an exponential distribution with **lambda** as the rate parameter **mean** and **std. dev** is given by **1/lambda**. For lambda = 0.2 , mean = 5.0 and standard deviation = 5.0 or (variance = 25.0). First, we generate 40 random exponentials (with lambda = 0.2) and take a mean of this. We repeat this for 1000 times.
+```{r}
+mns <- sapply(1:1000,function(x) mean(rexp(40,rate=0.2)))
+```
+
+### 2. Sample Mean vs Theoretical Mean
+By Large of Large Numbers (LLN), sample mean should converge to the  ***theoretical mean = 5.0***
+```{r}
+#Sample mean is given by
+mean(mns)
+```
+As you can see the sample mean is very close to the theoretical mean.
+
+### 3. Sample Variance vs Theoretical Variance
+Since variance is square of standard deviation, we just consider standard deviation. Standard Error is the ratio of standard deviation to square root of n. Plugging in the theoretical standard deviation in to the equation, we get  ***standard error (SE) = Theoretical s.d. / sqrt(n) = 5 / sqrt(40) = 0.7905694***.
+```{r}
+#standard error for the samples
+sd(mns)
+```
+Again standard error closely matches with the value calculated based on theoretical standard deviation. Now let us plot the histogram and overlay density distribution over it. A vertical line is drawn at x=5 i.e. at the theoretical mean.
+```{r, warning=FALSE, message=FALSE, fig.align='center', fig.height=3, fig.width=7}
+ggplot(data.frame(x=mns), aes(x)) + geom_histogram(color="black",fill="blue", aes(y=..density..)) + 
+geom_density(color="red",size=1) + geom_vline(xintercept=5.0, size=1.5) + 
+labs(x="mean",y="density", title="Sample Mean for Exponential Distribution n=40 and iter=1000")
+```
+It is no surprise that center of the distribution is very close to the theoretical mean (black line at x=5) and this plot closely resembles a normal distribution thus proving ***Central Limit Theorem (CLT)***. Mean is centered at the population mean and the standard error is equal to Theoretical s.d / sqrt(n).
+
+### 4. Distribution
+Let us build a distribution using 40 random normal distributions. We will set ***mean = 2.0*** and we want the spread to be 0.8 or we want SE = SD / sqrt(n) = 0.8. In other words ***SD = 0.8 * sqrt(40) = 5.059644***. Let us form a data frame with exponential distribution mean and normal distribution mean.
+```{r,fig.align='center',fig.height=3,fig.width=7, message=FALSE, warning=FALSE}
+norm_mns <- sapply(1:1000, function(x) mean(rnorm(40,mean=2.0,sd=0.8*sqrt(40))))
+labels <- c(rep('exp',1000), rep('norm', 1000))
+mydf <- data.frame(type=labels, means = c(mns,norm_mns))
+ggplot(mydf,aes(means,fill=type,y=..density..)) + geom_histogram() + geom_density(size=1.5) + 
+facet_grid(.~type) + 
+labs(x="mean",y="density",title="Comparison of Exponential and Normal Distribution")
+```
+Plots looks similar as expected.

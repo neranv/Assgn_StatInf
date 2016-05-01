@@ -1,0 +1,67 @@
+---
+title: "Exploring ToothGrowth Dataset"
+output: pdf_document
+author: "Naren Vijayakumar"
+fontsize: 11pt
+geometry: margin=1in
+---
+
+```{r warning=FALSE, message=FALSE}
+library(datasets)
+library(dplyr)
+```
+
+Loading the required dataset
+```{r}
+mydf <- ToothGrowth
+mydf$dose <- as.factor(mydf$dose)
+```
+
+This dataset is based on the study of effects of Vitamin C on tooth growth in guinea pigs. 
+```{r}
+names(mydf)
+```
+It conists of 3 fields. ***len*** corresponds to length of odontoblasts (teeth) in each of 10 guinea pigs, ***dose*** corresponds to dose levels and ***supp*** corresponds to delivery methods orange juice (OJ) or ascrobic acid (VC). Box plot for different dosage levels.
+
+```{r}
+table(mydf$supp, mydf$dose)
+```
+
+```{r,fig.align='center',fig.height=3,fig.width=7,message=FALSE,warning=FALSE}
+ggplot(mydf, aes(x=supp,y=len)) +  geom_boxplot(aes(group=supp,fill=supp)) + 
+facet_grid(. ~ dose) + labs(x="Supplement Type", y="Length of Teeth",title="Boxplot for Different Dosage Levels")
+```
+
+Let us perform t test for different dosage levels. Our Null Hypothesis **H0: there is no difference between supplement types** and alternate hypothesis **Ha: there is difference between supplement types**. We set ***alpha=0.05***. 
+
+```{r}
+# OJ at different dosage levels
+OJ_05 <- mydf %>% filter(dose==0.5 & supp=="OJ") %>% select(len)
+OJ_1 <- mydf %>% filter(dose==1.0 & supp=="OJ") %>% select(len)
+OJ_2 <- mydf %>% filter(dose==2.0 & supp=="OJ") %>% select(len)
+# VC at different dosage levels
+VC_05 <- mydf %>% filter(dose==0.5 & supp=="VC") %>% select(len)
+VC_1 <- mydf %>% filter(dose==1.0 & supp=="VC") %>% select(len)
+VC_2 <- mydf %>% filter(dose==2.0 & supp=="VC") %>% select(len)
+```
+
+
+```{r}
+# p-value at 0.5 dosage level is less than 0.05 so accept Ha
+t.test(OJ_05,VC_05,var.equal=FALSE)
+```
+p-value is less than **alpha=0.05**, so we accept **Ha**
+
+```{r}
+# p-value at 1.0 dosage level is less than 0.05 so accept Ha
+t.test(OJ_1,VC_1,var.equal=FALSE)
+````
+p-value is less than **alpha=0.05**, so we accept **Ha**
+
+```{r}
+# p-value at 1.0 dosage level is greater than 0.05 so fail to reject H0
+t.test(OJ_2,VC_2,var.equal=FALSE)
+```
+p-value is greater than **alpha=0.05**, so we fail to reject **H0**
+
+From p-values and plot, OJ seems to be more effective for dosage levels 0.5 and 1.0. But at dosage level 2.0 OJ and VC are the same.
